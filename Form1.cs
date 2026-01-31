@@ -1,7 +1,19 @@
+using System.Text.Json;
+
 namespace Weather_Desktop_App;
+
+public class City
+{
+    public string name { get; set; }
+    public float lat { get; set; }
+    public float lon { get; set; }
+    public string country { get; set; }
+    public string state { get; set; }
+}
 
 public partial class Form1 : Form
 {
+    private string APIKEY;
     TextBox cityInput;
     Button searchButton;
 
@@ -18,13 +30,52 @@ public partial class Form1 : Form
         }
     }
 
-    private void Search(object sender, EventArgs e)
+    private async Task<City?> GetCity(string cityName)
     {
-        Console.WriteLine(cityInput.Text);
+        string url1 = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
+        HttpClient client = new();
+
+        var response = await client.GetAsync(url1);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        var city = JsonSerializer.Deserialize<List<City>>(json);
+
+        if (city == null || city.Count == 0)
+        {
+            return null;
+        }
+
+        // try
+        // {
+        //     string url2 = $"https://restcountries.com/v3.1/alpha/{city[0].country}";
+        //     var response2 = await client.GetAsync(url2);
+
+        //     if ()
+        // }
+
+        return city[0];
+    }
+
+    private async void Search(object sender, EventArgs e)
+    {
+        var city = await GetCity(cityInput.Text);
+
+        Console.WriteLine(city.name);
+        Console.WriteLine(city.lat);
+        Console.WriteLine(city.lon);
+        Console.WriteLine(city.state);
+        Console.WriteLine(city.country);
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
+        APIKEY = File.ReadAllLines(@"D:\Programming\Projects\Weather-Desktop-App\APIKEY.txt")[0];
+
         cityInput = new TextBox
         {
             Location = new Point(300, 40),
