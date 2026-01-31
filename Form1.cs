@@ -14,8 +14,11 @@ public class City
 public partial class Form1 : Form
 {
     private string APIKEY;
+    City city;
     TextBox cityInput;
     Button searchButton;
+    Panel mainPanel;
+    Label cityGeoDetails;
 
     public Form1()
     {
@@ -70,29 +73,41 @@ public partial class Form1 : Form
 
             city[0].country = country;
         }
-        catch (Exception) {}
+        catch (Exception) { }
 
         return city[0];
     }
 
     private async void Search(object sender, EventArgs e)
     {
-        var city = await GetCity(cityInput.Text);
+        city = await GetCity(cityInput.Text);
 
-        Console.WriteLine(city.name);
-        Console.WriteLine(city.lat);
-        Console.WriteLine(city.lon);
-        Console.WriteLine(city.state);
-        Console.WriteLine(city.country);
+        if (city == null)
+        {
+            cityGeoDetails.Text = "Something went wrong...";
+            return;
+        }
+
+        cityGeoDetails.Text = city.name;
+        cityGeoDetails.Text = city.state != null && city.state.Length > 0 ? cityGeoDetails.Text + ", " + city.state : cityGeoDetails.Text;
+        cityGeoDetails.Text += $", {city.country}";
+
+        cityGeoDetails.Text += $"\n{Math.Abs(city.lat)}°";
+        cityGeoDetails.Text += city.lat > 0 ? " N" : city.lat < 0 ? " S" : "";
+        
+        cityGeoDetails.Text += $" {Math.Abs(city.lon)}°";
+        cityGeoDetails.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
+        this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - this.Width, Screen.PrimaryScreen.WorkingArea.Height - this.Height);
+
         APIKEY = File.ReadAllLines(@"D:\Programming\Projects\Weather-Desktop-App\APIKEY.txt")[0];
 
         cityInput = new TextBox
         {
-            Location = new Point(300, 40),
+            Location = new Point(100, 40),
             Size = new Size(182, 20),
             PlaceholderText = "Enter city..."
         };
@@ -101,12 +116,33 @@ public partial class Form1 : Form
 
         searchButton = new Button
         {
-            Location = new Point(482, 38),
+            Location = new Point(282, 38),
             Size = new Size(30, 30),
+            Font = new Font("Wide Latin", 8, FontStyle.Regular),
             Text = "🔎",
             BackColor = System.Drawing.SystemColors.Control
         };
         searchButton.Click += Search;
         this.Controls.Add(searchButton);
+
+        mainPanel = new Panel
+        {
+            Location = new Point(50, 100),
+            Size = new Size(300, 300),
+            BackColor = Color.AntiqueWhite
+        };
+        this.Controls.Add(mainPanel);
+
+        cityGeoDetails = new Label
+        {
+            Location = new Point(0, 5),
+            AutoSize = true,
+            MinimumSize = new Size(300, 0),
+            MaximumSize = new Size(300, 0),
+            Text = "Try searching a city..",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 10, FontStyle.Regular),
+        };
+        mainPanel.Controls.Add(cityGeoDetails);
     }
 }

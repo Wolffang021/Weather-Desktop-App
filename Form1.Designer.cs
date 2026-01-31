@@ -30,8 +30,8 @@ partial class Form1
     {
         this.components = new System.ComponentModel.Container();
         this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.ClientSize = new System.Drawing.Size(800, 450);
-        this.StartPosition = FormStartPosition.CenterScreen;
+        this.ClientSize = new System.Drawing.Size(400, 450);
+        this.StartPosition = FormStartPosition.Manual;
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
         this.BackColor = Color.FromArgb(40, 41, 45);
