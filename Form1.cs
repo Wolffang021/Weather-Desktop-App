@@ -50,13 +50,27 @@ public partial class Form1 : Form
             return null;
         }
 
-        // try
-        // {
-        //     string url2 = $"https://restcountries.com/v3.1/alpha/{city[0].country}";
-        //     var response2 = await client.GetAsync(url2);
+        try
+        {
+            string url2 = $"https://restcountries.com/v3.1/alpha/{city[0].country}";
+            var response2 = await client.GetAsync(url2);
 
-        //     if ()
-        // }
+            if (!response2.IsSuccessStatusCode)
+            {
+                throw new Exception();
+            }
+
+            var json2 = await response2.Content.ReadAsStringAsync();
+            string? country = JsonDocument.Parse(json2).RootElement[0].GetProperty("name").GetProperty("common").ToString();
+
+            if (country == null || country == "" || country.Length == 0)
+            {
+                throw new Exception();
+            }
+
+            city[0].country = country;
+        }
+        catch (Exception) {}
 
         return city[0];
     }
@@ -94,7 +108,5 @@ public partial class Form1 : Form
         };
         searchButton.Click += Search;
         this.Controls.Add(searchButton);
-
-        Console.Write(cityInput.Size.Height);
     }
 }
