@@ -33,6 +33,8 @@ partial class Form1
         this.ClientSize = new System.Drawing.Size(800, 450);
         this.StartPosition = FormStartPosition.CenterScreen;
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
+        this.MaximizeBox = false;
+        this.BackColor = Color.FromArgb(40, 41, 45);
         this.Text = "Weather Desktop App";
         this.Load += Form1_Load;
     }
