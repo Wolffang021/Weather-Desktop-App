@@ -25,14 +25,6 @@ public partial class Form1 : Form
         InitializeComponent();
     }
 
-    private void SearchUsingEnter(object sender, KeyEventArgs e)
-    {
-        if (e.KeyCode == Keys.Enter)
-        {
-            Search(sender, (EventArgs)e);
-        }
-    }
-
     private async Task<City?> GetCity(string cityName)
     {
         string url1 = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
@@ -78,6 +70,14 @@ public partial class Form1 : Form
         return city[0];
     }
 
+    private void SearchUsingEnter(object sender, KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Enter)
+        {
+            Search(sender, (EventArgs)e);
+        }
+    }
+
     private async void Search(object sender, EventArgs e)
     {
         city = await GetCity(cityInput.Text);
@@ -94,7 +94,7 @@ public partial class Form1 : Form
 
         cityGeoDetails.Text += $"\n{Math.Abs(city.lat)}°";
         cityGeoDetails.Text += city.lat > 0 ? " N" : city.lat < 0 ? " S" : "";
-        
+
         cityGeoDetails.Text += $" {Math.Abs(city.lon)}°";
         cityGeoDetails.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
     }
