@@ -73,7 +73,7 @@ public partial class Form1 : Form
 
             city[0].country = country;
         }
-        catch (Exception) { }
+        catch (Exception) {}
 
         return city[0];
     }
@@ -128,8 +128,9 @@ public partial class Form1 : Form
         mainPanel = new Panel
         {
             Location = new Point(50, 100),
-            Size = new Size(300, 300),
-            BackColor = Color.AntiqueWhite
+            AutoSize = true,
+            MinimumSize = new Size(300, 0),
+            MaximumSize = new Size(300, 300)
         };
         this.Controls.Add(mainPanel);
 
@@ -142,6 +143,7 @@ public partial class Form1 : Form
             Text = "Try searching a city..",
             TextAlign = ContentAlignment.TopCenter,
             Font = new Font("Segoe UI", 10, FontStyle.Regular),
+            ForeColor = Color.White
         };
         mainPanel.Controls.Add(cityGeoDetails);
     }
