@@ -103,7 +103,7 @@ public partial class Form1 : Form
     {
         this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - this.Width, Screen.PrimaryScreen.WorkingArea.Height - this.Height);
 
-        APIKEY = File.ReadAllLines(@"D:\Programming\Projects\Weather-Desktop-App\APIKEY.txt")[0];
+        APIKEY = File.ReadAllLines(@$"{AppContext.BaseDirectory[..^25]}APIKEY.txt")[0];
 
         cityInput = new TextBox
         {
