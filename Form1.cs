@@ -1,6 +1,5 @@
 using System.Net.NetworkInformation;
 using System.Text.Json;
-using Microsoft.VisualBasic.Devices;
 
 namespace Weather_Desktop_App;
 
@@ -13,6 +12,11 @@ public class City
     public string state { get; set; }
 }
 
+public class Weather
+{
+    
+}
+
 public partial class Form1 : Form
 {
     private string APIKEY;
@@ -21,18 +25,24 @@ public partial class Form1 : Form
     Button searchButton;
     Panel mainPanel;
     Label cityGeoDetails;
+    Label temperatureDetails;
 
     public Form1()
     {
         InitializeComponent();
     }
 
+    private async Task<Weather?> GetWeather(float lat, float lon)
+    {
+        return null;
+    }
+
     private async Task<City?> GetCity(string cityName)
     {
-        string url1 = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
+        string url = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
         HttpClient client = new();
 
-        var response = await client.GetAsync(url1);
+        var response = await client.GetAsync(url);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -40,16 +50,16 @@ public partial class Form1 : Form
         }
 
         string json = await response.Content.ReadAsStringAsync();
-        var city = JsonSerializer.Deserialize<List<City>>(json);
+        var cities = JsonSerializer.Deserialize<List<City>>(json);
 
-        if (city == null || city.Count == 0)
+        if (cities == null || cities.Count == 0)
         {
             return null;
         }
 
         try
         {
-            string url2 = $"https://restcountries.com/v3.1/alpha/{city[0].country}";
+            string url2 = $"https://restcountries.com/v3.1/alpha/{cities[0].country}";
             var response2 = await client.GetAsync(url2);
 
             if (!response2.IsSuccessStatusCode)
@@ -65,11 +75,11 @@ public partial class Form1 : Form
                 throw new Exception();
             }
 
-            city[0].country = country;
+            cities[0].country = country;
         }
         catch (Exception) {}
 
-        return city[0];
+        return cities[0];
     }
 
     private void SearchUsingEnter(object sender, KeyEventArgs e)
@@ -88,13 +98,15 @@ public partial class Form1 : Form
             return;
         }
 
-        city = await GetCity(cityInput.Text);
+        var city = await GetCity(cityInput.Text);
 
         if (city == null)
         {
             cityGeoDetails.Text = "Something went wrong...";
             return;
         }
+
+        var weather = await GetWeather(city.lat, city.lon);
 
         cityGeoDetails.Text = city.name;
         cityGeoDetails.Text = city.state != null && city.state.Length > 0 ? cityGeoDetails.Text + ", " + city.state : cityGeoDetails.Text;
@@ -105,6 +117,12 @@ public partial class Form1 : Form
 
         cityGeoDetails.Text += $" {Math.Abs(city.lon)}°";
         cityGeoDetails.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
+
+        if (weather == null)
+        {
+            temperatureDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+            temperatureDetails.Text = "Couldn't fetch weather details...";
+        }
     }
 
     private void Form1_Load(object sender, EventArgs e)
@@ -154,5 +172,18 @@ public partial class Form1 : Form
             ForeColor = Color.White
         };
         mainPanel.Controls.Add(cityGeoDetails);
+
+        temperatureDetails = new Label
+        {
+            Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5),
+            AutoSize = true,
+            MinimumSize = new Size(300, 0),
+            MaximumSize = new Size(300, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 10, FontStyle.Regular),
+            ForeColor = Color.White
+        };
+        mainPanel.Controls.Add(temperatureDetails);
     }
 }
