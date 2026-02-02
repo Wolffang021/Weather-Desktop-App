@@ -12,15 +12,56 @@ public class City
     public string state { get; set; }
 }
 
+public class WeatherInfo
+{
+    public string main { get; set; }
+    public string description { get; set; }
+    public string icon { get; set; }
+}
+
+public class MainInfo
+{
+    public float temp { get; set; }
+    public float feels_like { get; set; }
+    public float temp_min { get; set; }
+    public float temp_max { get; set; }
+    public int pressure { get; set; }
+    public int humidity { get; set; }
+}
+
+public class WindInfo
+{
+    public float speed { get; set; }
+}
+
+public class SysInfo
+{
+    public long sunrise { get; set; }
+    public long sunset { get; set; }
+}
+
+public class CloudsInfo
+{
+    public int all { get; set; }
+}
+
+
 public class Weather
 {
-    
+    public List<WeatherInfo> weather { get; set; }
+    public MainInfo main { get; set; }
+    public int visibility { get; set; }
+    public WindInfo wind { get; set; }
+    public SysInfo sys { get; set; }
+    public int timezone { get; set; }
+    public long dt { get; set; }
+    public CloudsInfo clouds { get; set; }
 }
+
 
 public partial class Form1 : Form
 {
     private string APIKEY;
-    City city;
     TextBox cityInput;
     Button searchButton;
     Panel mainPanel;
@@ -34,13 +75,18 @@ public partial class Form1 : Form
 
     private async Task<Weather?> GetWeather(float lat, float lon)
     {
+        HttpClient client = new();
+
+        string url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}.35&appid={APIKEY}";
+
+
         return null;
     }
 
     private async Task<City?> GetCity(string cityName)
     {
-        string url = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
         HttpClient client = new();
+        string url = $"https://api.openweathermap.org/geo/1.0/direct?q={cityName}&appid={APIKEY}";
 
         var response = await client.GetAsync(url);
 
@@ -118,10 +164,12 @@ public partial class Form1 : Form
         cityGeoDetails.Text += $" {Math.Abs(city.lon)}°";
         cityGeoDetails.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
 
+        temperatureDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+
         if (weather == null)
         {
-            temperatureDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
             temperatureDetails.Text = "Couldn't fetch weather details...";
+            return;
         }
     }
 
