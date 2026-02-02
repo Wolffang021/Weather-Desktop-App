@@ -1,4 +1,6 @@
+using System.Net.NetworkInformation;
 using System.Text.Json;
+using Microsoft.VisualBasic.Devices;
 
 namespace Weather_Desktop_App;
 
@@ -80,6 +82,12 @@ public partial class Form1 : Form
 
     private async void Search(object sender, EventArgs e)
     {
+        if (!NetworkInterface.GetIsNetworkAvailable())
+        {
+            cityGeoDetails.Text = "No connection...";
+            return;
+        }
+
         city = await GetCity(cityInput.Text);
 
         if (city == null)
