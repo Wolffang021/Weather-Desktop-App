@@ -45,7 +45,6 @@ public class CloudsInfo
     public int all { get; set; }
 }
 
-
 public class Weather
 {
     public List<WeatherInfo> weather { get; set; }
@@ -76,11 +75,19 @@ public partial class Form1 : Form
     private async Task<Weather?> GetWeather(float lat, float lon)
     {
         HttpClient client = new();
+        string url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={APIKEY}";
 
-        string url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}.35&appid={APIKEY}";
+        var response = await client.GetAsync(url);
 
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
 
-        return null;
+        string json = await response.Content.ReadAsStringAsync();
+        var weathers = JsonSerializer.Deserialize<Weather>(json);
+
+        return weathers;
     }
 
     private async Task<City?> GetCity(string cityName)
@@ -138,6 +145,9 @@ public partial class Form1 : Form
 
     private async void Search(object sender, EventArgs e)
     {
+        cityGeoDetails.Text = "Searching...";
+        temperatureDetails.Text = "";
+
         if (!NetworkInterface.GetIsNetworkAvailable())
         {
             cityGeoDetails.Text = "No connection...";
