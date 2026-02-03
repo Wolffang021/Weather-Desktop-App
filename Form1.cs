@@ -65,7 +65,8 @@ public partial class Form1 : Form
     Button? searchButton;
     Panel? mainPanel;
     Label? cityGeoDetails;
-    Label? temperatureDetails;
+    Label? weatherDetails;
+    PictureBox? weatherIcon;
 
     public Form1()
     {
@@ -146,7 +147,11 @@ public partial class Form1 : Form
     private async void Search(object? sender, EventArgs e)
     {
         cityGeoDetails.Text = "Searching...";
-        temperatureDetails.Text = "";
+        weatherDetails.Text = "";
+        weatherDetails.MinimumSize = new Size(300, 0);
+        weatherDetails.MaximumSize = new Size(300, 0);
+        weatherDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+        weatherIcon.ImageLocation = null;
 
         if (!NetworkInterface.GetIsNetworkAvailable())
         {
@@ -174,13 +179,19 @@ public partial class Form1 : Form
         cityGeoDetails.Text += $" {Math.Abs(city.lon)}°";
         cityGeoDetails.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
 
-        temperatureDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+        weatherDetails.Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+        weatherIcon.Location = new Point(weatherDetails.Size.Width, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
 
         if (weather == null)
         {
-            temperatureDetails.Text = "Couldn't fetch weather details...";
+            weatherDetails.Text = "Couldn't fetch weather details...";
             return;
         }
+
+        weatherDetails.MaximumSize = new Size(240, 0);
+        weatherDetails.MinimumSize = new Size(240, 0);
+        weatherIcon.Location = new Point(weatherDetails.Size.Width, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5);
+        weatherIcon.ImageLocation = $"https://openweathermap.org/img/wn/{weather.weather[0].icon}.png";
     }
 
     private void Form1_Load(object? sender, EventArgs e)
@@ -214,7 +225,8 @@ public partial class Form1 : Form
             Location = new Point(50, 100),
             AutoSize = true,
             MinimumSize = new Size(300, 0),
-            MaximumSize = new Size(300, 300)
+            MaximumSize = new Size(300, 300),
+            // BackColor = Color.Beige
         };
         this.Controls.Add(mainPanel);
 
@@ -227,11 +239,12 @@ public partial class Form1 : Form
             Text = "Try searching a city..",
             TextAlign = ContentAlignment.TopCenter,
             Font = new Font("Segoe UI", 10, FontStyle.Regular),
-            ForeColor = Color.White
+            ForeColor = Color.White,
+            BackColor = Color.AntiqueWhite
         };
         mainPanel.Controls.Add(cityGeoDetails);
 
-        temperatureDetails = new Label
+        weatherDetails = new Label
         {
             Location = new Point(0, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5),
             AutoSize = true,
@@ -240,8 +253,19 @@ public partial class Form1 : Form
             Text = "",
             TextAlign = ContentAlignment.TopCenter,
             Font = new Font("Segoe UI", 10, FontStyle.Regular),
-            ForeColor = Color.White
+            ForeColor = Color.White,
+            BackColor = Color.BlanchedAlmond
         };
-        mainPanel.Controls.Add(temperatureDetails);
+        mainPanel.Controls.Add(weatherDetails);
+
+        weatherIcon = new PictureBox
+        {
+            Location = new Point(weatherDetails.Size.Width, cityGeoDetails.Location.Y + cityGeoDetails.Size.Height + 5),
+            Size = new Size(60, 60),
+            SizeMode = PictureBoxSizeMode.StretchImage,
+            // BackColor = Color.Bisque,
+            // BorderStyle = BorderStyle.FixedSingle
+        };
+        mainPanel.Controls.Add(weatherIcon);
     }
 }
