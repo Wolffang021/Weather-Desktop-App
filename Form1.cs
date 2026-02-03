@@ -5,18 +5,18 @@ namespace Weather_Desktop_App;
 
 public class City
 {
-    public string name { get; set; }
+    public string? name { get; set; }
     public float lat { get; set; }
     public float lon { get; set; }
-    public string country { get; set; }
-    public string state { get; set; }
+    public string? country { get; set; }
+    public string? state { get; set; }
 }
 
 public class WeatherInfo
 {
-    public string main { get; set; }
-    public string description { get; set; }
-    public string icon { get; set; }
+    public string? main { get; set; }
+    public string? description { get; set; }
+    public string? icon { get; set; }
 }
 
 public class MainInfo
@@ -47,25 +47,25 @@ public class CloudsInfo
 
 public class Weather
 {
-    public List<WeatherInfo> weather { get; set; }
-    public MainInfo main { get; set; }
+    public List<WeatherInfo>? weather { get; set; }
+    public MainInfo? main { get; set; }
     public int visibility { get; set; }
-    public WindInfo wind { get; set; }
-    public SysInfo sys { get; set; }
+    public WindInfo? wind { get; set; }
+    public SysInfo? sys { get; set; }
     public int timezone { get; set; }
     public long dt { get; set; }
-    public CloudsInfo clouds { get; set; }
+    public CloudsInfo? clouds { get; set; }
 }
 
 
 public partial class Form1 : Form
 {
-    private string APIKEY;
-    TextBox cityInput;
-    Button searchButton;
-    Panel mainPanel;
-    Label cityGeoDetails;
-    Label temperatureDetails;
+    private string? APIKEY;
+    TextBox? cityInput;
+    Button? searchButton;
+    Panel? mainPanel;
+    Label? cityGeoDetails;
+    Label? temperatureDetails;
 
     public Form1()
     {
@@ -135,7 +135,7 @@ public partial class Form1 : Form
         return cities[0];
     }
 
-    private void SearchUsingEnter(object sender, KeyEventArgs e)
+    private void SearchUsingEnter(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode == Keys.Enter)
         {
@@ -143,7 +143,7 @@ public partial class Form1 : Form
         }
     }
 
-    private async void Search(object sender, EventArgs e)
+    private async void Search(object? sender, EventArgs e)
     {
         cityGeoDetails.Text = "Searching...";
         temperatureDetails.Text = "";
@@ -183,7 +183,7 @@ public partial class Form1 : Form
         }
     }
 
-    private void Form1_Load(object sender, EventArgs e)
+    private void Form1_Load(object? sender, EventArgs e)
     {
         this.Location = new Point(Screen.PrimaryScreen.WorkingArea.Width - this.Width, Screen.PrimaryScreen.WorkingArea.Height - this.Height);
 
