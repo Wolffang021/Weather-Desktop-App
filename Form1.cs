@@ -68,6 +68,8 @@ public partial class Form1 : Form
     Label? temperatureLbl;
     Label? weatherLbl;
     PictureBox? weatherIcon;
+    Label? cityTimeLbl;
+    Label? lastUpdateLbl;
 
     public Form1()
     {
@@ -140,28 +142,45 @@ public partial class Form1 : Form
     private void ClearScreen()
     {
         mainPanel.BorderStyle = BorderStyle.None;
+
         cityGeoLbl.Text = "Searching...";
+
         temperatureLbl.Text = "";
         temperatureLbl.MinimumSize = new Size(300, 0);
         temperatureLbl.MaximumSize = new Size(300, 0);
         temperatureLbl.Location = new Point(temperatureLbl.Location.X, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
+
         weatherLbl.Text = "";
         weatherLbl.MinimumSize = new Size(300, 0);
         weatherLbl.MaximumSize = new Size(300, 0);
         weatherLbl.Location = new Point(weatherLbl.Location.X, temperatureLbl.Location.Y + temperatureLbl.Size.Height - 5);
+
         weatherIcon.ImageLocation = null;
+
+        cityTimeLbl.Text = "";
+        cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
+
+        lastUpdateLbl.Text = "";
+        lastUpdateLbl.Location = new Point(mainPanel.Location.X + cityTimeLbl.Size.Width, mainPanel.Location.Y + mainPanel.Size.Height + 2);
     }
 
     private void UpdateScreen()
     {
         mainPanel.BorderStyle = BorderStyle.FixedSingle;
+
         temperatureLbl.MaximumSize = new Size(240, 0);
         temperatureLbl.MinimumSize = new Size(240, 0);
         temperatureLbl.Location = new Point(temperatureLbl.Location.X, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
+
         weatherLbl.MaximumSize = new Size(240, 0);
         weatherLbl.MinimumSize = new Size(240, 0);
         weatherLbl.Location = new Point(weatherLbl.Location.X, temperatureLbl.Location.Y + temperatureLbl.Size.Height - 5);
+
         weatherIcon.Location = new Point(temperatureLbl.Size.Width, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
+
+        cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
+
+        lastUpdateLbl.Location = new Point(mainPanel.Location.X + cityTimeLbl.Size.Width, mainPanel.Location.Y + mainPanel.Size.Height + 2);
     }
 
     private void SearchUsingEnter(object? sender, KeyEventArgs e)
@@ -212,8 +231,14 @@ public partial class Form1 : Form
         }
 
         temperatureLbl.Text = (weather.main.temp - 273).ToString("F2") + "° C";
+
         weatherLbl.Text = $"{weather.weather[0].main}";
+
         weatherIcon.ImageLocation = $"https://openweathermap.org/img/wn/{weather.weather[0].icon}.png";
+
+        cityTimeLbl.Text = DateTimeOffset.FromUnixTimeSeconds(weather.dt).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt");
+
+        lastUpdateLbl.Text = $"Last updated {(int)(DateTime.UtcNow - DateTimeOffset.FromUnixTimeSeconds(weather.dt)).TotalMinutes} minutes ago";
 
         UpdateScreen();
     }
@@ -306,5 +331,33 @@ public partial class Form1 : Form
             // BorderStyle = BorderStyle.FixedSingle
         };
         mainPanel.Controls.Add(weatherIcon);
+
+        cityTimeLbl = new Label
+        {
+            Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width / 2, 0),
+            MaximumSize = new Size(mainPanel.Size.Width / 2, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopLeft,
+            Font = new Font("Segoe UI", 6, FontStyle.Bold),
+            ForeColor = Color.White,
+            // BackColor = Color.BlanchedAlmond
+        };
+        this.Controls.Add(cityTimeLbl);
+
+        lastUpdateLbl = new Label
+        {
+            Location = new Point(mainPanel.Location.X + cityTimeLbl.Size.Width, mainPanel.Location.Y + mainPanel.Size.Height + 2),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width / 2, 0),
+            MaximumSize = new Size(mainPanel.Size.Width / 2, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopRight,
+            Font = new Font("Segoe UI", 6, FontStyle.Bold),
+            ForeColor = Color.White,
+            // BackColor = Color.BlanchedAlmond
+        };
+        this.Controls.Add(lastUpdateLbl);
     }
 }
