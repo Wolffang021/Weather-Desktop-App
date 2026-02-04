@@ -68,6 +68,8 @@ public partial class Form1 : Form
     Label? temperatureLbl;
     Label? weatherLbl;
     PictureBox? weatherIcon;
+    Label? leftMiscDetailLbl;
+    Label? rightMiscDetailLbl;
     Label? cityTimeLbl;
     Label? lastUpdateLbl;
 
@@ -79,7 +81,7 @@ public partial class Form1 : Form
     private async Task<Weather?> GetWeather(float lat, float lon)
     {
         HttpClient client = new();
-        string url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={APIKEY}";
+        string url = $"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={APIKEY}&units=metric";
 
         var response = await client.GetAsync(url);
 
@@ -157,6 +159,12 @@ public partial class Form1 : Form
 
         weatherIcon.ImageLocation = null;
 
+        leftMiscDetailLbl.Text = "";
+        leftMiscDetailLbl.Location = new Point(leftMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
+
+        rightMiscDetailLbl.Text = "";
+        rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
+
         cityTimeLbl.Text = "";
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -168,19 +176,49 @@ public partial class Form1 : Form
     {
         mainPanel.BorderStyle = BorderStyle.FixedSingle;
 
-        temperatureLbl.MaximumSize = new Size(240, 0);
-        temperatureLbl.MinimumSize = new Size(240, 0);
+        temperatureLbl.MaximumSize = new Size(190, 0);
+        temperatureLbl.MinimumSize = new Size(190, 0);
         temperatureLbl.Location = new Point(temperatureLbl.Location.X, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
 
-        weatherLbl.MaximumSize = new Size(240, 0);
-        weatherLbl.MinimumSize = new Size(240, 0);
+        weatherLbl.MaximumSize = new Size(190, 0);
+        weatherLbl.MinimumSize = new Size(190, 0);
         weatherLbl.Location = new Point(weatherLbl.Location.X, temperatureLbl.Location.Y + temperatureLbl.Size.Height - 5);
 
         weatherIcon.Location = new Point(temperatureLbl.Size.Width, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
 
+        leftMiscDetailLbl.Location = new Point(leftMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
+
+        rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
+
+        mainPanel.Size = new Size(mainPanel.Size.Width, mainPanel.Size.Height + 5);
+
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
         lastUpdateLbl.Location = new Point(mainPanel.Location.X + cityTimeLbl.Size.Width, mainPanel.Location.Y + mainPanel.Size.Height + 2);
+    }
+
+    private string SimplifyClouds(float clouds)
+    {
+        if (clouds <= 10)
+        {
+            return "Clear sky";
+        }
+        else if (clouds <= 30)
+        {
+            return "Mostly clear";
+        }
+        else if (clouds <= 60)
+        {
+            return "Partly cloudy";
+        }
+        else if (clouds <= 85)
+        {
+            return "Mostly cloudy";
+        }
+        else
+        {
+            return "Overcast";
+        }
     }
 
     private void SearchUsingEnter(object? sender, KeyEventArgs e)
@@ -221,16 +259,13 @@ public partial class Form1 : Form
         cityGeoLbl.Text += $" {Math.Abs(city.lon)}°";
         cityGeoLbl.Text += city.lon > 0 ? " E" : city.lon < 0 ? " W" : "";
 
-        temperatureLbl.Location = new Point(0, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
-        weatherIcon.Location = new Point(temperatureLbl.Size.Width, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
-
         if (weather == null)
         {
-            temperatureLbl.Text = "Couldn't fetch weather details...";
+            temperatureLbl.Text = "Couldn't fetch weather details";
             return;
         }
 
-        temperatureLbl.Text = (weather.main.temp - 273).ToString("F2") + "° C";
+        temperatureLbl.Text = weather.main.temp.ToString("F2") + "° C";
 
         weatherLbl.Text = $"{weather.weather[0].main}";
 
@@ -239,6 +274,10 @@ public partial class Form1 : Form
         cityTimeLbl.Text = DateTimeOffset.FromUnixTimeSeconds(weather.dt).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt");
 
         lastUpdateLbl.Text = $"Last updated {(int)(DateTime.UtcNow - DateTimeOffset.FromUnixTimeSeconds(weather.dt)).TotalMinutes} minutes ago";
+
+        leftMiscDetailLbl.Text = $"Feels: {weather.main.feels_like.ToString("F2") + "° C"}\nMax: {weather.main.temp_max.ToString("F2") + "° C"}\nMin: {weather.main.temp_min.ToString("F2") + "° C"}";
+
+        rightMiscDetailLbl.Text = $"Pressure: {weather.main.pressure} hPa\nHumidity: {weather.main.humidity}%\nClouds: {SimplifyClouds(weather.clouds.all)}";
 
         UpdateScreen();
     }
@@ -331,6 +370,34 @@ public partial class Form1 : Form
             // BorderStyle = BorderStyle.FixedSingle
         };
         mainPanel.Controls.Add(weatherIcon);
+        
+        leftMiscDetailLbl = new Label
+        {
+            Location = new Point(0, weatherLbl.Location.Y + weatherLbl.Size.Height + 8),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width / 2, 0),
+            MaximumSize = new Size(mainPanel.Size.Width / 2, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 8, FontStyle.Regular),
+            ForeColor = Color.White,
+            // BackColor = Color.DarkBlue
+        };
+        mainPanel.Controls.Add(leftMiscDetailLbl);
+
+        rightMiscDetailLbl = new Label
+        {
+            Location = new Point(leftMiscDetailLbl.Location.X + leftMiscDetailLbl.Size.Width, weatherLbl.Location.Y + weatherLbl.Size.Height + 8),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width / 2, 0),
+            MaximumSize = new Size(mainPanel.Size.Width / 2, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 8, FontStyle.Regular),
+            ForeColor = Color.White,
+            // BackColor = Color.DarkOrange
+        };
+        mainPanel.Controls.Add(rightMiscDetailLbl);
 
         cityTimeLbl = new Label
         {
