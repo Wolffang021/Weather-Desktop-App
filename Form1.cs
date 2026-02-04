@@ -213,7 +213,7 @@ public partial class Form1 : Form
 
         cityGeoLbl.Text = city.name;
         cityGeoLbl.Text = city.state != null && city.state.Length > 0 ? cityGeoLbl.Text + ", " + city.state : cityGeoLbl.Text;
-        cityGeoLbl.Text += $", {city.country}";
+        cityGeoLbl.Text = city.country != null && city.country.Length > 0 ? cityGeoLbl.Text + ", " + city.country : cityGeoLbl.Text;
 
         cityGeoLbl.Text += $"\n{Math.Abs(city.lat)}°";
         cityGeoLbl.Text += city.lat > 0 ? " N" : city.lat < 0 ? " S" : "";
