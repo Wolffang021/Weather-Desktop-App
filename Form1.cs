@@ -32,6 +32,7 @@ public class MainInfo
 public class WindInfo
 {
     public float speed { get; set; }
+    public float deg { get; set; }
 }
 
 public class SysInfo
@@ -70,6 +71,7 @@ public partial class Form1 : Form
     PictureBox? weatherIcon;
     Label? leftMiscDetailLbl;
     Label? rightMiscDetailLbl;
+    Label? bottomMiscDetailLbl;
     Label? cityTimeLbl;
     Label? lastUpdateLbl;
 
@@ -165,6 +167,9 @@ public partial class Form1 : Form
         rightMiscDetailLbl.Text = "";
         rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
 
+        bottomMiscDetailLbl.Text = "";
+        bottomMiscDetailLbl.Location = new Point(bottomMiscDetailLbl.Location.X, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8);
+
         cityTimeLbl.Text = "";
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -190,7 +195,7 @@ public partial class Form1 : Form
 
         rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
 
-        mainPanel.Size = new Size(mainPanel.Size.Width, mainPanel.Size.Height + 5);
+        bottomMiscDetailLbl.Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 5);
 
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -218,6 +223,36 @@ public partial class Form1 : Form
         else
         {
             return "Overcast";
+        }
+    }
+
+    private string SimplifyWindDirection(float deg)
+    {
+        switch (deg)
+        {
+            default:
+                return "N";
+
+            case float x when x > 22.5 && x <= 67.5:
+                return "NE";
+
+            case float x when x > 67.5 && x <= 112.5:
+                return "E";
+
+            case float x when x > 112.5 && x <= 157.5:
+                return "SE";
+
+            case float x when x > 157.5 && x <= 202.5:
+                return "S";
+
+            case float x when x > 202.5 && x <= 247.5:
+                return "SW";
+
+            case float x when x > 247.5 && x <= 292.5:
+                return "W";
+
+            case float x when x > 292.5 && x <= 337.5:
+                return "NW";
         }
     }
 
@@ -279,6 +314,8 @@ public partial class Form1 : Form
 
         rightMiscDetailLbl.Text = $"Pressure: {weather.main.pressure} hPa\nHumidity: {weather.main.humidity}%\nClouds: {SimplifyClouds(weather.clouds.all)}";
 
+        bottomMiscDetailLbl.Text = $"Wind speed: {weather.wind.speed} Km/h {SimplifyWindDirection(weather.wind.deg)}\nSunrise: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunrise).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}\nSunset: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunset).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}";
+
         UpdateScreen();
     }
 
@@ -314,6 +351,7 @@ public partial class Form1 : Form
             AutoSize = true,
             MinimumSize = new Size(300, 0),
             MaximumSize = new Size(300, 300),
+            Padding = new Padding(0, 0, 0, 5),
             BorderStyle = BorderStyle.None,
             // BackColor = Color.Beige
         };
@@ -398,6 +436,20 @@ public partial class Form1 : Form
             // BackColor = Color.DarkOrange
         };
         mainPanel.Controls.Add(rightMiscDetailLbl);
+
+        bottomMiscDetailLbl = new Label
+        {
+            Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 5),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width, 0),
+            MaximumSize = new Size(mainPanel.Size.Width, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 8, FontStyle.Regular),
+            ForeColor = Color.White,
+            // BackColor = Color.DarkKhaki
+        };
+        mainPanel.Controls.Add(bottomMiscDetailLbl);
 
         cityTimeLbl = new Label
         {
