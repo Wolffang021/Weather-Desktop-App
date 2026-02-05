@@ -58,6 +58,11 @@ public class Weather
     public CloudsInfo? clouds { get; set; }
 }
 
+public class Aqi
+{
+    public string? aqi;
+}
+
 
 public partial class Form1 : Form
 {
@@ -72,12 +77,39 @@ public partial class Form1 : Form
     Label? leftMiscDetailLbl;
     Label? rightMiscDetailLbl;
     Label? bottomMiscDetailLbl;
+    Label? aqiLbl;
     Label? cityTimeLbl;
     Label? lastUpdateLbl;
 
     public Form1()
     {
         InitializeComponent();
+    }
+
+    private async Task<Aqi?> GetAqi(float lat, float lon)
+    {
+        HttpClient client = new();
+        string url = $"https://api.openweathermap.org/data/2.5/air_pollution?lat={lat}&lon={lon}&appid={APIKEY}";
+
+        var response = await client.GetAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return null;
+        }
+
+        string json = await response.Content.ReadAsStringAsync();
+        Aqi? aqiVar = new()
+        {
+            aqi = JsonDocument.Parse(json).RootElement.GetProperty("list")[0].GetProperty("main").GetProperty("aqi").ToString()
+        };
+
+        if (aqiVar == null || aqiVar.aqi == "" || aqiVar.aqi.Length == 0)
+        {
+            return null;
+        }
+
+        return aqiVar;
     }
 
     private async Task<Weather?> GetWeather(float lat, float lon)
@@ -170,6 +202,10 @@ public partial class Form1 : Form
         bottomMiscDetailLbl.Text = "";
         bottomMiscDetailLbl.Location = new Point(bottomMiscDetailLbl.Location.X, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8);
 
+        aqiLbl.Text = "";
+        aqiLbl.ForeColor = Color.White;
+        aqiLbl.Location = new Point(aqiLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
+
         cityTimeLbl.Text = "";
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -196,6 +232,8 @@ public partial class Form1 : Form
         rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
 
         bottomMiscDetailLbl.Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 5);
+
+        aqiLbl.Location = new Point(aqiLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
 
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -256,6 +294,35 @@ public partial class Form1 : Form
         }
     }
 
+    private string SimplyfyAqi(string aqi)
+    {
+        switch (aqi)
+        {
+            default:
+                return "Unknown";
+
+            case "1":
+                aqiLbl.ForeColor = Color.SeaGreen;
+                return "Good";
+
+            case "2":
+                aqiLbl.ForeColor = Color.GreenYellow;
+                return "Fair";
+
+            case "3":
+                aqiLbl.ForeColor = Color.Yellow;
+                return "Moderate";
+
+            case "4":
+                aqiLbl.ForeColor = Color.Orange;
+                return "Poor";
+
+            case "5":
+                aqiLbl.ForeColor = Color.Red;
+                return "Very poor";
+        }
+    }
+
     private void SearchUsingEnter(object? sender, KeyEventArgs e)
     {
         if (e.KeyCode == Keys.Enter)
@@ -283,6 +350,7 @@ public partial class Form1 : Form
         }
 
         var weather = await GetWeather(city.lat, city.lon);
+        var aqiVar = await GetAqi(city.lat, city.lon);
 
         cityGeoLbl.Text = city.name;
         cityGeoLbl.Text = city.state != null && city.state.Length > 0 ? cityGeoLbl.Text + ", " + city.state : cityGeoLbl.Text;
@@ -316,6 +384,15 @@ public partial class Form1 : Form
 
         bottomMiscDetailLbl.Text = $"Wind speed: {weather.wind.speed} Km/h {SimplifyWindDirection(weather.wind.deg)}\nSunrise: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunrise).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}\nSunset: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunset).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}";
 
+        if (aqiVar == null)
+        {
+            aqiLbl.Text = "Couldn't fetch air quality details";
+            UpdateScreen();
+            return;
+        }
+
+        aqiLbl.Text = $"AQI: {aqiVar.aqi} ({SimplyfyAqi(aqiVar.aqi)})";
+
         UpdateScreen();
     }
 
@@ -347,7 +424,7 @@ public partial class Form1 : Form
 
         mainPanel = new Panel
         {
-            Location = new Point(50, 80),
+            Location = new Point(50, 90),
             AutoSize = true,
             MinimumSize = new Size(300, 0),
             MaximumSize = new Size(300, 300),
@@ -450,6 +527,20 @@ public partial class Form1 : Form
             // BackColor = Color.DarkKhaki
         };
         mainPanel.Controls.Add(bottomMiscDetailLbl);
+
+        aqiLbl = new Label
+        {
+            Location = new Point(0, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width, 0),
+            MaximumSize = new Size(mainPanel.Size.Width, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 10, FontStyle.Bold),
+            ForeColor = Color.White,
+            // BackColor = Color.DarkGoldenrod
+        };
+        mainPanel.Controls.Add(aqiLbl);
 
         cityTimeLbl = new Label
         {
