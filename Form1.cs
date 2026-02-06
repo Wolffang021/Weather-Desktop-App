@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Net.NetworkInformation;
 using System.Text.Json;
 
@@ -58,9 +59,27 @@ public class Weather
     public CloudsInfo? clouds { get; set; }
 }
 
+public class MainAqiInfo
+{
+    public int aqi { get; set; }
+}
+
+public class ComponentsInfo
+{
+    public float co { get; set; }
+    public float no { get; set; }
+    public float no2 { get; set; }
+    public float o3 { get; set; }
+    public float so2 { get; set; }
+    public float pm2_5 { get; set; }
+    public float pm10 { get; set; }
+    public float nh3 { get; set; }
+}
+
 public class Aqi
 {
-    public string? aqi;
+    public MainAqiInfo? main { get; set; }
+    public ComponentsInfo? components { get; set; }
 }
 
 
@@ -99,12 +118,9 @@ public partial class Form1 : Form
         }
 
         string json = await response.Content.ReadAsStringAsync();
-        Aqi? aqiVar = new()
-        {
-            aqi = JsonDocument.Parse(json).RootElement.GetProperty("list")[0].GetProperty("main").GetProperty("aqi").ToString()
-        };
+        var aqiVar = JsonSerializer.Deserialize<Aqi>(JsonDocument.Parse(json).RootElement.GetProperty("list")[0]);
 
-        if (aqiVar == null || aqiVar.aqi == "" || aqiVar.aqi.Length == 0)
+        if (aqiVar == null)
         {
             return null;
         }
@@ -231,7 +247,7 @@ public partial class Form1 : Form
 
         rightMiscDetailLbl.Location = new Point(rightMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
 
-        bottomMiscDetailLbl.Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 5);
+        bottomMiscDetailLbl.Location = new Point(bottomMiscDetailLbl.Location.X, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8);
 
         aqiLbl.Location = new Point(aqiLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
 
@@ -294,33 +310,71 @@ public partial class Form1 : Form
         }
     }
 
-    private string SimplyfyAqi(string aqi)
+    private string SimplyfyAqi(int aqi)
     {
         switch (aqi)
         {
             default:
                 return "Unknown";
 
-            case "1":
-                aqiLbl.ForeColor = Color.SeaGreen;
+            case int x when x <= 50:
+                aqiLbl.ForeColor = Color.Green; // DeepSkyBlue might also work
                 return "Good";
 
-            case "2":
+            case int x when x <= 100:
                 aqiLbl.ForeColor = Color.GreenYellow;
                 return "Fair";
 
-            case "3":
+            case int x when x <= 150:
                 aqiLbl.ForeColor = Color.Yellow;
                 return "Moderate";
 
-            case "4":
+            case int x when x <= 200:
                 aqiLbl.ForeColor = Color.Orange;
-                return "Poor";
+                return "Unhealthy";
 
-            case "5":
+            case int x when x <= 300:
+                aqiLbl.ForeColor = Color.OrangeRed;
+                return "Very unhealthy";
+
+            case int x when x <= 500:
                 aqiLbl.ForeColor = Color.Red;
-                return "Very poor";
+                return "Hazardous";
         }
+    }
+
+    private int CalculateAqi(ComponentsInfo components)
+    {
+        float pm25 = components.pm2_5;
+        double cHigh, cLow;
+        int iHigh, iLow;
+
+        if (pm25 <= 12)
+        {
+            (cHigh, cLow, iHigh, iLow) = (12, 0, 50, 0);
+        }
+        else if (pm25 <= 35.4)
+        {
+            (cHigh, cLow, iHigh, iLow) = (35.4, 12.1, 100, 51);
+        }
+        else if (pm25 <= 55.4)
+        {
+            (cHigh, cLow, iHigh, iLow) = (55.4, 35.5, 150, 101);
+        }
+        else if (pm25 <= 150.4)
+        {
+            (cHigh, cLow, iHigh, iLow) = (150.4, 55.5, 200, 151);
+        }
+        else if (pm25 <= 250.4)
+        {
+            (cHigh, cLow, iHigh, iLow) = (250.4, 150.5, 300, 201);
+        }
+        else
+        {
+            (cHigh, cLow, iHigh, iLow) = (500.4, 250.5, 500, 301);
+        }
+
+        return (int)Math.Round(((iHigh - iLow) / (cHigh - cLow)) * (pm25 - cLow) + iLow);
     }
 
     private void SearchUsingEnter(object? sender, KeyEventArgs e)
@@ -391,7 +445,8 @@ public partial class Form1 : Form
             return;
         }
 
-        aqiLbl.Text = $"AQI: {aqiVar.aqi} ({SimplyfyAqi(aqiVar.aqi)})";
+        int calculatedAqi = CalculateAqi(aqiVar.components);
+        aqiLbl.Text = $"AQI: {calculatedAqi} ({SimplyfyAqi(calculatedAqi)})";
 
         UpdateScreen();
     }
@@ -516,7 +571,7 @@ public partial class Form1 : Form
 
         bottomMiscDetailLbl = new Label
         {
-            Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 5),
+            Location = new Point(0, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8),
             AutoSize = true,
             MinimumSize = new Size(mainPanel.Size.Width, 0),
             MaximumSize = new Size(mainPanel.Size.Width, 0),
