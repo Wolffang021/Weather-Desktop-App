@@ -96,6 +96,7 @@ public partial class Form1 : Form
     Label? leftMiscDetailLbl;
     Label? rightMiscDetailLbl;
     Label? bottomMiscDetailLbl;
+    Label? sunSetRiseLbl;
     Label? aqiLbl;
     Label? cityTimeLbl;
     Label? lastUpdateLbl;
@@ -208,6 +209,8 @@ public partial class Form1 : Form
         weatherLbl.Location = new Point(weatherLbl.Location.X, temperatureLbl.Location.Y + temperatureLbl.Size.Height - 5);
 
         weatherIcon.ImageLocation = null;
+        weatherIcon.BorderStyle = BorderStyle.None;
+        weatherIcon.BackColor = Color.FromArgb(0, 0, 0, 0);
 
         leftMiscDetailLbl.Text = "";
         leftMiscDetailLbl.Location = new Point(leftMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
@@ -218,9 +221,12 @@ public partial class Form1 : Form
         bottomMiscDetailLbl.Text = "";
         bottomMiscDetailLbl.Location = new Point(bottomMiscDetailLbl.Location.X, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8);
 
+        sunSetRiseLbl.Text = "";
+        sunSetRiseLbl.Location = new (sunSetRiseLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
+
         aqiLbl.Text = "";
         aqiLbl.ForeColor = Color.White;
-        aqiLbl.Location = new Point(aqiLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
+        aqiLbl.Location = new Point(aqiLbl.Location.X, sunSetRiseLbl.Location.Y + sunSetRiseLbl.Size.Height + 5);
 
         cityTimeLbl.Text = "";
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
@@ -241,6 +247,8 @@ public partial class Form1 : Form
         weatherLbl.MinimumSize = new Size(190, 0);
         weatherLbl.Location = new Point(weatherLbl.Location.X, temperatureLbl.Location.Y + temperatureLbl.Size.Height - 5);
 
+        weatherIcon.BorderStyle = BorderStyle.FixedSingle;
+        weatherIcon.BackColor = Color.FromArgb(116, 117, 116);
         weatherIcon.Location = new Point(temperatureLbl.Size.Width, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5);
 
         leftMiscDetailLbl.Location = new Point(leftMiscDetailLbl.Location.X, weatherLbl.Location.Y + weatherLbl.Size.Height + 8);
@@ -249,7 +257,9 @@ public partial class Form1 : Form
 
         bottomMiscDetailLbl.Location = new Point(bottomMiscDetailLbl.Location.X, leftMiscDetailLbl.Location.Y + leftMiscDetailLbl.Size.Height + 8);
 
-        aqiLbl.Location = new Point(aqiLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
+        sunSetRiseLbl.Location = new (sunSetRiseLbl.Location.X, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5);
+
+        aqiLbl.Location = new Point(aqiLbl.Location.X, sunSetRiseLbl.Location.Y + sunSetRiseLbl.Size.Height + 5);
 
         cityTimeLbl.Location = new Point(mainPanel.Location.X, mainPanel.Location.Y + mainPanel.Size.Height + 2);
 
@@ -422,7 +432,7 @@ public partial class Form1 : Form
             return;
         }
 
-        temperatureLbl.Text = weather.main.temp.ToString("F2") + "° C";
+        temperatureLbl.Text = Math.Round(weather.main.temp).ToString("F0") + "° C";
 
         weatherLbl.Text = $"{weather.weather[0].main}";
 
@@ -432,11 +442,13 @@ public partial class Form1 : Form
 
         lastUpdateLbl.Text = $"Last updated {(int)(DateTime.UtcNow - DateTimeOffset.FromUnixTimeSeconds(weather.dt)).TotalMinutes} minutes ago";
 
-        leftMiscDetailLbl.Text = $"Feels: {weather.main.feels_like.ToString("F2") + "° C"}\nMax: {weather.main.temp_max.ToString("F2") + "° C"}\nMin: {weather.main.temp_min.ToString("F2") + "° C"}";
+        leftMiscDetailLbl.Text = $"Feels: {Math.Round(weather.main.feels_like).ToString("F0") + "° C"}\nMax: {Math.Round(weather.main.temp_max).ToString("F0") + "° C"}\nMin: {Math.Round(weather.main.temp_min).ToString("F0") + "° C"}";
 
         rightMiscDetailLbl.Text = $"Pressure: {weather.main.pressure} hPa\nHumidity: {weather.main.humidity}%\nClouds: {SimplifyClouds(weather.clouds.all)}";
 
-        bottomMiscDetailLbl.Text = $"Wind speed: {weather.wind.speed} Km/h {SimplifyWindDirection(weather.wind.deg)}\nSunrise: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunrise).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}\nSunset: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunset).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}";
+        bottomMiscDetailLbl.Text = $"Wind speed: {weather.wind.speed} Km/h {SimplifyWindDirection(weather.wind.deg)}\nVisibility: {weather.visibility / 100} Km";
+        
+        sunSetRiseLbl.Text = $"Sunrise: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunrise).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}\nSunset: {DateTimeOffset.FromUnixTimeSeconds(weather.sys.sunset).ToOffset(TimeSpan.FromSeconds(weather.timezone)).ToString("hh:mm tt")}";
 
         if (aqiVar == null)
         {
@@ -482,7 +494,7 @@ public partial class Form1 : Form
             Location = new Point(50, 90),
             AutoSize = true,
             MinimumSize = new Size(300, 0),
-            MaximumSize = new Size(300, 300),
+            MaximumSize = new Size(300, 400),
             Padding = new Padding(0, 0, 0, 5),
             BorderStyle = BorderStyle.None,
             // BackColor = Color.Beige
@@ -536,8 +548,8 @@ public partial class Form1 : Form
             Location = new Point(temperatureLbl.Size.Width, cityGeoLbl.Location.Y + cityGeoLbl.Size.Height + 5),
             Size = new Size(60, 60),
             SizeMode = PictureBoxSizeMode.StretchImage,
-            // BackColor = Color.Bisque,
-            // BorderStyle = BorderStyle.FixedSingle
+            BackColor = Color.FromArgb(0, 0, 0, 0),
+            BorderStyle = BorderStyle.None
         };
         mainPanel.Controls.Add(weatherIcon);
         
@@ -583,9 +595,23 @@ public partial class Form1 : Form
         };
         mainPanel.Controls.Add(bottomMiscDetailLbl);
 
-        aqiLbl = new Label
+        sunSetRiseLbl = new Label
         {
             Location = new Point(0, bottomMiscDetailLbl.Location.Y + bottomMiscDetailLbl.Size.Height + 5),
+            AutoSize = true,
+            MinimumSize = new Size(mainPanel.Size.Width, 0),
+            MaximumSize = new Size(mainPanel.Size.Width, 0),
+            Text = "",
+            TextAlign = ContentAlignment.TopCenter,
+            Font = new Font("Segoe UI", 8, FontStyle.Regular),
+            ForeColor = Color.White,
+            // BackColor = Color.DarkKhaki
+        };
+        mainPanel.Controls.Add(sunSetRiseLbl);
+
+        aqiLbl = new Label
+        {
+            Location = new Point(0, sunSetRiseLbl.Location.Y + sunSetRiseLbl.Size.Height + 5),
             AutoSize = true,
             MinimumSize = new Size(mainPanel.Size.Width, 0),
             MaximumSize = new Size(mainPanel.Size.Width, 0),

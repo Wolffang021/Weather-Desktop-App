@@ -34,7 +34,8 @@ partial class Form1
         this.StartPosition = FormStartPosition.Manual;
         this.FormBorderStyle = FormBorderStyle.FixedSingle;
         this.MaximizeBox = false;
-        this.BackColor = Color.FromArgb(40, 41, 45);
+        // this.BackColor = Color.FromArgb(40, 41, 45);
+        this.BackColor = Color.FromArgb(56, 56, 56);
         this.Text = "Weather Desktop App";
         this.Load += Form1_Load;
     }
