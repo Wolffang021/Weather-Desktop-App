@@ -32,7 +32,7 @@ WinForms desktop app that shows current weather, air quality, and local time for
 **Screenshot**
 
 
-![App screenshot](Assets\Screenshots\1.png)
+![App screenshot](https://github.com/Wolffang021/Weather-Desktop-App/blob/37887ae34ab07448664479aaa93dffaa2dff9780/Assets/Screenshots/1.png)
 
 **Notes**
 - The app reads the API key from `APIKEY.txt` at startup. Keep the file out of source control.
